@@ -70,6 +70,19 @@ export default function AccessPage() {
           <h2 style={{ margin: 0 }}>COLOMBIA</h2>
         </div>
 
+        <div
+          style={{
+            background: '#97a0aa',
+            color: 'black',
+            padding: 15,
+            borderRadius: 8,
+            marginBottom: 20
+          }}
+        >
+          <h2 style={{ margin: 0 }}>AVISO LEGAL:</h2>
+          <h2 style={{ margin: 0 }}>El siguiente es el aviso legal de la polla</h2>
+        </div>
+
         {/* INPUT + BOTÓN VER */}
         <div style={{ position: 'relative', marginBottom: 15 }}>
           <input

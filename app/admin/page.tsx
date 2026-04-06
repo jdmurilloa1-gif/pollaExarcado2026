@@ -56,7 +56,9 @@ export default function AdminPage() {
     >
       {/* HEADER */}
       <div style={{ textAlign: 'center', marginBottom: 25 }}>
-        <h1 style={{ margin: 0 }}>Panel Administrador</h1>
+        <p style={{ color: '#666', marginTop: 5 }}>
+          Panel administradorr
+        </p>
         <p style={{ color: '#666', marginTop: 5 }}>
           Top 10 usuarios por puntaje
         </p>
@@ -149,7 +151,8 @@ export default function AdminPage() {
             }}
           >
             <div>
-              <div style={{ fontWeight: 'bold', fontSize: 16 }}>
+              <div style={{ fontWeight: 'bold', fontSize: 16,
+                color: '#333' }}>
                 {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`} {user.longName}
               </div>
               <div style={{ fontSize: 12, color: '#777' }}>
