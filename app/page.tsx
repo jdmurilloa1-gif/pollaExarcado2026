@@ -286,12 +286,16 @@ export default function Home() {
               {match.data_match}
             </div>
 
-            <div style={{ marginBottom: 10}}>
+            <div style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
               {match.team_a} vs {match.team_b}
             </div>
 
             {match.stage === 'group' ? (
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ fontWeight: 'bold', 
+                color: '#000000', display: 'flex', gap: 10 }}>
                 <input
                   type="number"
                   min="0"

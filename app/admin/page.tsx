@@ -57,7 +57,7 @@ export default function AdminPage() {
       {/* HEADER */}
       <div style={{ textAlign: 'center', marginBottom: 25 }}>
         <p style={{ color: '#666', marginTop: 5 }}>
-          Panel administradorr
+          Panel administrador
         </p>
         <p style={{ color: '#666', marginTop: 5 }}>
           Top 10 usuarios por puntaje
