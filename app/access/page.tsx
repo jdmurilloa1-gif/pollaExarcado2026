@@ -23,6 +23,7 @@ export default function AccessPage() {
       localStorage.setItem('user_totalPoints', data.total_points)
       localStorage.setItem('user_dataMatch', data.data_match)
       localStorage.setItem('user_matchOrder', data.match_order)
+      localStorage.setItem('user_groupCountries', data.group_countries)
 
       if (data.name === 'admin' || data.role === 'admin') {
         router.push('/admin')

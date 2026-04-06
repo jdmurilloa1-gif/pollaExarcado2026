@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { countries } from '../lib/countries'
 
 export default function Home() {
   const [matches, setMatches] = useState<any[]>([])
@@ -213,6 +214,21 @@ export default function Home() {
         <h1 style={{ margin: 0 }}>POLLA MUNDIALISTA PRO-TEMPLO</h1>
       </div>
 
+      {/* INSTRUCCIONES */}
+      <div
+        style={{
+          background: '#7aa6d4',
+          color: 'black',
+          padding: 20,
+          borderRadius: 10,
+          textAlign: 'center',
+          marginBottom: 20
+        }}
+      >
+        <h1 style={{ margin: 0 }}>INSTRUCCIONES:</h1>
+        <h1 style={{ margin: 0 }}>Acá van las instrucciones</h1>
+      </div>
+
       {/* USER BANNER */}
       <div
         style={{
@@ -222,8 +238,20 @@ export default function Home() {
           marginBottom: 20
         }}
       >
-        <strong>{longUserName}</strong> ({userName})<br />
-        Puntos: {totalPoints}
+        <h1
+        style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>{longUserName} ({userName})
+   </h1>
+        <h1
+        style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
+        Puntos: {totalPoints}</h1>
+        
+        
       <div style={{ marginTop: 10 }}>
           <button
             onClick={() => {
@@ -286,12 +314,34 @@ export default function Home() {
               {match.data_match}
             </div>
 
+            
+
             <div style={{
                 marginBottom: 10,fontWeight: 'bold', 
                 color: '#000000',
               }}>
               {match.team_a} vs {match.team_b}
             </div>
+
+            {match.stage === 'group' ? 
+
+            <div
+              style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
+              Grupo: {match.group_countries}
+            </div>
+
+            :
+
+            <div
+              style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
+              Ganador:
+            </div>}
 
             {match.stage === 'group' ? (
               <div style={{ fontWeight: 'bold', 
@@ -329,33 +379,32 @@ export default function Home() {
                 />
               </div>
             ) : (
-              <div style={{ display: 'flex', gap: 10 }}>
-                {[match.team_a, match.team_b].map((team) => (
-                  <button
-                    key={team}
-                    disabled={isLocked}
-                    onClick={() =>
-                      handleChange(match.id, 'winner', team)
-                    }
-                    style={{
-                      flex: 1,
-                      padding: 8,
-                      borderRadius: 5,
-                      border: 'none',
-                      background:
-                        predictions[match.id]?.winner === team
-                          ? '#28a745'
-                          : '#eee',
-                      color:
-                        predictions[match.id]?.winner === team
-                          ? 'white'
-                          : 'black'
-                    }}
-                  >
-                    {team}
-                  </button>
-                ))}
-              </div>
+
+<div style={{ display: 'flex' }}>
+  <select
+    disabled={isLocked}
+    value={predictions[match.id]?.winner || ''}
+    onChange={(e) =>
+      handleChange(match.id, 'winner', e.target.value)
+    }
+    style={{
+      flex: 1,
+      padding: 8,
+      borderRadius: 5
+    }}
+  >
+    <option value="">Selecciona ganador</option>
+    {countries.map((team) => (
+      <option key={team} value={team}>
+        {team}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+
+
             )}
           </div>
         ))}

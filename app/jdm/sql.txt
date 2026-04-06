@@ -166,3 +166,5 @@ SELECT access_code, COUNT(*) AS veces
 FROM users
 GROUP BY access_code
 HAVING COUNT(*) > 1;
+
+

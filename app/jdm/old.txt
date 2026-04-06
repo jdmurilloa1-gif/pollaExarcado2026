@@ -5,13 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 
 export default function Home() {
   const [matches, setMatches] = useState<any[]>([])
-  const [predictions, setPredictions] = useState<{
-    [key: string]: {
-      team_a?: string
-      team_b?: string
-      winner?: string
-    }
-  }>({})
+  const [predictions, setPredictions] = useState<any>({})
 
   const [userName, setUserName] = useState<string | null>(null)
   const [longUserName, setLongUserName] = useState<string | null>(null)
@@ -39,7 +33,14 @@ export default function Home() {
   const initData = async (id: string) => {
     await fetchUser(id)
     const matchesData = await fetchMatches()
-    await fetchPredictions(id, matchesData)
+
+    // 🔹 ordenar por match_order ascendente
+    const ordered = [...matchesData].sort(
+      (a, b) => (a.match_order || 0) - (b.match_order || 0)
+    )
+
+    setMatches(ordered)
+    await fetchPredictions(id, ordered)
   }
 
   const fetchUser = async (id: string) => {
@@ -55,7 +56,6 @@ export default function Home() {
   const fetchMatches = async () => {
     const { data, error } = await supabase.from('matches').select('*')
     if (error) console.error(error)
-    setMatches(data || [])
     return data || []
   }
 
@@ -65,10 +65,7 @@ export default function Home() {
       .select('*')
       .eq('user_id', id)
 
-    if (error) {
-      console.error(error)
-      return
-    }
+    if (error) return
 
     const formatted: any = {}
 
@@ -95,7 +92,7 @@ export default function Home() {
     if (isLocked) return
     if (value !== '' && Number(value) < 0) return
 
-    setPredictions((prev) => ({
+    setPredictions((prev: any) => ({
       ...prev,
       [matchId]: {
         ...prev[matchId],
@@ -106,6 +103,29 @@ export default function Home() {
 
   const handleSaveAll = async () => {
     if (!userId) return
+
+    // 🔴 VALIDACIÓN GLOBAL
+  const hasInvalid = matches.some((match) => {
+    const pred = predictions[match.id]
+
+    if (!pred) return true
+
+    if (match.stage === 'group') {
+      return (
+        pred.team_a === undefined ||
+        pred.team_b === undefined ||
+        pred.team_a === '' ||
+        pred.team_b === ''
+      )
+    } else {
+      return !pred.winner
+    }
+  })
+
+  if (hasInvalid) {
+    alert('Debes completar todas las predicciones antes de guardar')
+    return
+  }
 
     const confirmSave = confirm(
       '¿Estás seguro? No podrás modificar tus predicciones después.'
@@ -189,7 +209,23 @@ export default function Home() {
           marginBottom: 20
         }}
       >
-        <h1 style={{ margin: 0 }}>POLLA MUNDIALISTA</h1>
+        <h1 style={{ margin: 0 }}>EXARCADO MARONITA SANTA RAFQA DE COLOMBIA</h1>
+        <h1 style={{ margin: 0 }}>POLLA MUNDIALISTA PRO-TEMPLO</h1>
+      </div>
+
+      {/* INSTRUCCIONES */}
+      <div
+        style={{
+          background: '#7aa6d4',
+          color: 'black',
+          padding: 20,
+          borderRadius: 10,
+          textAlign: 'center',
+          marginBottom: 20
+        }}
+      >
+        <h1 style={{ margin: 0 }}>INSTRUCCIONES:</h1>
+        <h1 style={{ margin: 0 }}>Acá van las instrucciones</h1>
       </div>
 
       {/* USER BANNER */}
@@ -198,13 +234,24 @@ export default function Home() {
           background: 'white',
           padding: 15,
           borderRadius: 10,
-          marginBottom: 20,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          marginBottom: 20
         }}
       >
-        <strong>{longUserName}</strong> ({userName})<br />
-        Puntos: {totalPoints}
-        <div style={{ marginTop: 10 }}>
+        <h1
+        style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>{longUserName} ({userName})
+   </h1>
+        <h1
+        style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
+        Puntos: {totalPoints}</h1>
+        
+        
+      <div style={{ marginTop: 10 }}>
           <button
             onClick={() => {
               localStorage.clear()
@@ -256,12 +303,48 @@ export default function Home() {
               boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
             }}
           >
-            <div style={{ marginBottom: 10, fontWeight: 'bold' }}>
+            {/* 🔹 data_match mostrado arriba */}
+            <div
+              style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}
+            >
+              {match.data_match}
+            </div>
+
+            
+
+            <div style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
               {match.team_a} vs {match.team_b}
             </div>
 
+            {match.stage === 'group' ? 
+
+            <div
+              style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
+              Grupo: {match.group_countries}
+            </div>
+
+            :
+
+            <div
+              style={{
+                marginBottom: 10,fontWeight: 'bold', 
+                color: '#000000',
+              }}>
+              Ganador:
+            </div>}
+
             {match.stage === 'group' ? (
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ fontWeight: 'bold', 
+                color: '#000000', display: 'flex', gap: 10 }}>
                 <input
                   type="number"
                   min="0"
@@ -295,54 +378,34 @@ export default function Home() {
                 />
               </div>
             ) : (
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  disabled={isLocked}
-                  onClick={() =>
-                    handleChange(match.id, 'winner', match.team_a)
-                  }
-                  style={{
-                    flex: 1,
-                    padding: 8,
-                    borderRadius: 5,
-                    border: 'none',
-                    cursor: 'pointer',
-                    background:
-                      predictions[match.id]?.winner === match.team_a
-                        ? '#28a745'
-                        : '#eee',
-                    color:
-                      predictions[match.id]?.winner === match.team_a
-                        ? 'white'
-                        : 'black'
-                  }}
-                >
-                  {match.team_a}
-                </button>
 
-                <button
-                  disabled={isLocked}
-                  onClick={() =>
-                    handleChange(match.id, 'winner', match.team_b)
-                  }
-                  style={{
-                    flex: 1,
-                    padding: 8,
-                    borderRadius: 5,
-                    border: 'none',
-                    cursor: 'pointer',
-                    background:
-                      predictions[match.id]?.winner === match.team_b
-                        ? '#28a745'
-                        : '#eee',
-                    color:
-                      predictions[match.id]?.winner === match.team_b
-                        ? 'white'
-                        : 'black'
-                  }}
-                >
-                  {match.team_b}
-                </button>
+              
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[match.team_a, match.team_b].map((team) => (
+                  <button
+                    key={team}
+                    disabled={isLocked}
+                    onClick={() =>
+                      handleChange(match.id, 'winner', team)
+                    }
+                    style={{
+                      flex: 1,
+                      padding: 8,
+                      borderRadius: 5,
+                      border: 'none',
+                      background:
+                        predictions[match.id]?.winner === team
+                          ? '#28a745'
+                          : '#eee',
+                      color:
+                        predictions[match.id]?.winner === team
+                          ? 'white'
+                          : 'black'
+                    }}
+                  >
+                    {team}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -359,8 +422,7 @@ export default function Home() {
               border: 'none',
               padding: '12px 20px',
               borderRadius: 8,
-              fontSize: 16,
-              cursor: 'pointer'
+              fontSize: 16
             }}
           >
             Guardar todas mis predicciones
