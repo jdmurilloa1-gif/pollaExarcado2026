@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { countries } from '../lib/countries'
+import Image from 'next/image'
 
 export default function Home() {
   const [matches, setMatches] = useState<any[]>([])
@@ -226,8 +227,19 @@ export default function Home() {
         }}
       >
         <h1 style={{ margin: 0 }}>INSTRUCCIONES:</h1>
-        <h1 style={{ margin: 0 }}>Acá van las instrucciones</h1>
+        <h1 style={{ margin: 0 }}>Para la fase de grupos ingrese el resultado de cada partido, en total son 72 partidos de la fase de grupos, por cada resultado que acierte se sumará 5 puntos. Para la fase de eliminatorias seleccione el equipo que cree que ganará el partido mencionado, por cada equipo que acierte se sumará 10 puntos. Gana la persona que reuna más puntos al final del mundial. Una hora antes de iniciar el mundial, se bloquearán las predicciones. Recuerde al final dar al botón "Guardar mis predicciones", después de guardar no podrá modificar.</h1>
       </div>
+
+      <div style={{ textAlign: 'center', marginBottom: 20 }}>
+  <img
+    src="/grupos.png"
+    alt="Grupos del mundial"
+    style={{
+      maxWidth: '100%',
+      borderRadius: 10
+    }}
+  />
+</div>
 
       {/* USER BANNER */}
       <div
@@ -287,128 +299,160 @@ export default function Home() {
       )}
 
       {/* MATCHES */}
+{/* MATCHES */}
+
+{/* 🔵 FASE DE GRUPOS (igual que antes) */}
+<div
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: 15,
+    marginBottom: 40
+  }}
+>
+  {matches
+    .filter((m) => m.stage === 'group')
+    .map((match) => (
       <div
+        key={match.id}
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: 15
+          background: 'white',
+          padding: 15,
+          borderRadius: 10,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
         }}
       >
-        {matches.map((match) => (
+        <div style={{ marginBottom: 10, fontWeight: 'bold', color: '#000000',
+    textDecoration: 'underline' }}>
+          {match.data_match}
+        </div>
+
+        <div style={{ marginBottom: 10, fontWeight: 'bold', color: '#000000' }}>
+          {match.team_a} vs {match.team_b}
+        </div>
+
+        <div style={{ marginBottom: 10, fontWeight: 'bold', color: '#000000' }}>
+          Grupo: {match.group_countries}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 ,fontWeight: 'bold', color: '#000000',}}>
+          <input
+            type="number"
+            min="0"
+            disabled={isLocked}
+            value={predictions[match.id]?.team_a || ''}
+            onChange={(e) =>
+              handleChange(match.id, 'team_a', e.target.value)
+            }
+            style={{
+              width: '50%',
+              padding: 8,
+              borderRadius: 5,
+              backgroundColor: '#cce5ff'
+            }}
+          />
+
+          <input
+            type="number"
+            min="0"
+            disabled={isLocked}
+            value={predictions[match.id]?.team_b || ''}
+            onChange={(e) =>
+              handleChange(match.id, 'team_b', e.target.value)
+            }
+            style={{
+              width: '50%',
+              padding: 8,
+              borderRadius: 5,
+              backgroundColor: '#cce5ff'
+            }}
+          />
+        </div>
+      </div>
+    ))}
+</div>
+
+{/* 🔴 ELIMINATORIAS TIPO FIFA */}
+<div
+  style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    overflowX: 'auto',
+    gap: 30
+  }}
+>
+  {[
+    { key: 'r32', label: 'Dieciseisavos' },
+    { key: 'r16', label: 'Octavos' },
+    { key: 'qf', label: 'Cuartos' },
+    { key: 'sf', label: 'Semifinal' },
+    { key: 'third', label: 'Tercer puesto' },
+    { key: 'final', label: 'Final' }
+  ].map((round, i) => {
+    const roundMatches = matches.filter((m) => m.stage === round.key)
+
+    return (
+      <div
+        key={round.key}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 20,
+          minWidth: 250,
+          marginTop: i * 30
+        }}
+      >
+        <h3 style={{ textAlign: 'center', color: '#000' }}>
+          {round.label}
+        </h3>
+
+        {roundMatches.map((match) => (
           <div
             key={match.id}
             style={{
               background: 'white',
-              padding: 15,
+              padding: 10,
               borderRadius: 10,
               boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
             }}
           >
-            {/* 🔹 data_match mostrado arriba */}
-            <div
-              style={{
-                marginBottom: 10,fontWeight: 'bold', 
-                color: '#000000',
-              }}
-            >
+            <div style={{ fontSize: 12, marginBottom: 5, fontWeight: 'bold', color: '#000000',
+    textDecoration: 'underline' }}>
               {match.data_match}
             </div>
 
-            
+            <div style={{ fontWeight: 'bold' }}>{match.team_a}</div>
+            <div style={{ fontWeight: 'bold' }}>{match.team_b}</div>
 
-            <div style={{
-                marginBottom: 10,fontWeight: 'bold', 
-                color: '#000000',
-              }}>
-              {match.team_a} vs {match.team_b}
-            </div>
-
-            {match.stage === 'group' ? 
-
-            <div
+            <select
+              disabled={isLocked}
+              value={predictions[match.id]?.winner || ''}
+              onChange={(e) =>
+                handleChange(match.id, 'winner', e.target.value)
+              }
               style={{
-                marginBottom: 10,fontWeight: 'bold', 
-                color: '#000000',
-              }}>
-              Grupo: {match.group_countries}
-            </div>
-
-            :
-
-            <div
-              style={{
-                marginBottom: 10,fontWeight: 'bold', 
-                color: '#000000',
-              }}>
-              Ganador:
-            </div>}
-
-            {match.stage === 'group' ? (
-              <div style={{ fontWeight: 'bold', 
-                color: '#000000', display: 'flex', gap: 10 }}>
-                <input
-                  type="number"
-                  min="0"
-                  disabled={isLocked}
-                  value={predictions[match.id]?.team_a || ''}
-                  onChange={(e) =>
-                    handleChange(match.id, 'team_a', e.target.value)
-                  }
-                  style={{
-                    width: '50%',
-                    padding: 8,
-                    borderRadius: 5,
-                    border: '1px solid #ccc'
-                  }}
-                />
-
-                <input
-                  type="number"
-                  min="0"
-                  disabled={isLocked}
-                  value={predictions[match.id]?.team_b || ''}
-                  onChange={(e) =>
-                    handleChange(match.id, 'team_b', e.target.value)
-                  }
-                  style={{
-                    width: '50%',
-                    padding: 8,
-                    borderRadius: 5,
-                    border: '1px solid #ccc'
-                  }}
-                />
-              </div>
-            ) : (
-
-<div style={{ display: 'flex' }}>
-  <select
-    disabled={isLocked}
-    value={predictions[match.id]?.winner || ''}
-    onChange={(e) =>
-      handleChange(match.id, 'winner', e.target.value)
-    }
-    style={{
-      flex: 1,
-      padding: 8,
-      borderRadius: 5
-    }}
-  >
-    <option value="">Selecciona ganador</option>
-    {countries.map((team) => (
-      <option key={team} value={team}>
-        {team}
-      </option>
-    ))}
-  </select>
-</div>
-
-
-
-
-            )}
+                width: '100%',
+                marginTop: 5,
+                padding: 6,
+                borderRadius: 5,
+                backgroundColor: '#cce5ff',
+                fontWeight: 'bold', color: '#000000',
+              }}
+            >
+              <option value="">Ganador</option>
+              {countries.map((team) => (
+                <option key={team} value={team}>
+                  {team}
+                </option>
+              ))}
+            </select>
           </div>
         ))}
       </div>
+    )
+  })}
+</div>
 
       {!isLocked && (
         <div style={{ textAlign: 'center', marginTop: 30 }}>

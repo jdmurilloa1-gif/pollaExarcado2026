@@ -26,7 +26,7 @@ export default function AccessPage() {
       localStorage.setItem('user_groupCountries', data.group_countries)
 
       if (data.name === 'admin' || data.role === 'admin') {
-        router.push('/admin')
+        router.push('/adminJDM')
       } else {
         router.push('/')
       }
