@@ -422,8 +422,8 @@ export default function Home() {
               {match.data_match}
             </div>
 
-            <div style={{ fontWeight: 'bold' }}>{match.team_a}</div>
-            <div style={{ fontWeight: 'bold' }}>{match.team_b}</div>
+            <div style={{ fontWeight: 'bold' , color: '#000000'}}>{match.team_a}</div>
+            <div style={{ fontWeight: 'bold' , color: '#000000'}}>{match.team_b}</div>
 
             <select
               disabled={isLocked}
