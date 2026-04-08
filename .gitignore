@@ -19,7 +19,7 @@
 
 # production
 /build
-
+app/jdm/
 # misc
 .DS_Store
 *.pem
