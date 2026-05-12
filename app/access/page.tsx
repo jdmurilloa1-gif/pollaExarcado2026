@@ -10,25 +10,26 @@ export default function AccessPage() {
   const router = useRouter()
 
   const handleLogin = async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, name, total_points, is_locked, longName')
       .eq('access_code', code)
       .single()
+
+    if (error) {
+      console.error(error)
+    }
 
     if (data) {
       localStorage.setItem('user_id', data.id)
       localStorage.setItem('user_name', data.name)
       localStorage.setItem('user_longName', data.longName)
       localStorage.setItem('user_totalPoints', data.total_points)
-      localStorage.setItem('user_dataMatch', data.data_match)
-      localStorage.setItem('user_matchOrder', data.match_order)
-      localStorage.setItem('user_groupCountries', data.group_countries)
 
-      if (data.name === 'admin' || data.role === 'admin') {
+      if (data.name === 'admin') {
         router.push('/adminJDM')
       } else {
-        router.push('/')
+        router.push('/predicciones')
       }
     } else {
       alert('Código inválido')

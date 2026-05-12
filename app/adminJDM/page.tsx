@@ -1,7 +1,7 @@
 'use client'
-/*admin Ex4Rc4d0#2026+*/
-/*supabase: P0ll4Exarcado2026*/
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 import { countries } from '../../lib/countries'
 
@@ -13,45 +13,22 @@ type User = {
 }
 
 export default function AdminPage() {
+  const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
 
   const [inputIndex, setInputIndex] = useState('')
-const [inputA, setInputA] = useState('')
-const [inputB, setInputB] = useState('')
-const [inputWinner, setInputWinner] = useState('')
+  const [inputA, setInputA] = useState('')
+  const [inputB, setInputB] = useState('')
+  const [inputWinner, setInputWinner] = useState('')
 
-const runAgregarResultado = async () => {
-  if (!inputIndex) {
-    alert('Ingresa el número de partido')
-    return
-  }
+  const canUseAdminActions = useCallback(() => {
+    const name = localStorage.getItem('user_name')
+    return name === 'admin'
+  }, [])
 
-  setLoading(true)
-
-  const { error } = await supabase.rpc('update_match_result', {
-    p_index: Number(inputIndex),
-    p_res_a: inputA === '' ? null : Number(inputA),
-    p_res_b: inputB === '' ? null : Number(inputB),
-    p_ganador: inputWinner || null
-  })
-
-  if (error) {
-    console.error(error)
-    alert('Error al ejecutar')
-  } else {
-    alert('Partido actualizado')
-    setInputIndex('')
-    setInputA('')
-    setInputB('')
-    setInputWinner('')
-  }
-
-  setLoading(false)
-}
-
-  const fetchUsers = async () => {
-    setLoading(true)
+  const fetchUsers = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true)
     const { data } = await supabase
       .from('users')
       .select('id, name, longName, total_points')
@@ -59,28 +36,74 @@ const runAgregarResultado = async () => {
       .limit(10)
 
     if (data) setUsers(data)
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    fetchUsers()
+    if (showLoading) setLoading(false)
   }, [])
 
-  const runSumatoria = async () => {
-    setLoading(true)
-    const { error } = await supabase.rpc('SumatoriaPuntos')
-
-    if (error) {
-      alert('Error al ejecutar')
-      console.error(error)
-    } else {
-      await fetchUsers()
-      alert('Puntos actualizados')
-    }
-    setLoading(false)
+const runAgregarResultado = async () => {
+  if (!canUseAdminActions()) {
+    router.replace('/access')
+    return
   }
 
+  if (!inputIndex) {
+    alert('Ingresa el número de partido')
+    return
+  }
+
+  setLoading(true)
+
+  const { error: updateError } = await supabase.rpc('update_match_result', {
+    p_index: Number(inputIndex),
+    p_res_a: inputA === '' ? null : Number(inputA),
+    p_res_b: inputB === '' ? null : Number(inputB),
+    p_ganador: inputWinner || null
+  })
+
+  if (updateError) {
+    console.error(updateError)
+    alert('Error al guardar resultado')
+    setLoading(false)
+    return
+  }
+
+  const { error: pointsError } = await supabase.rpc('SumatoriaPuntos')
+
+  if (pointsError) {
+    console.error(pointsError)
+    alert('Resultado guardado, pero hubo error al recalcular puntos')
+    setLoading(false)
+    return
+  }
+
+  await fetchUsers(false)
+
+  alert('Resultado guardado, puntos recalculados y tabla actualizada')
+  setInputIndex('')
+  setInputA('')
+  setInputB('')
+  setInputWinner('')
+  setLoading(false)
+}
+
+  useEffect(() => {
+    if (!canUseAdminActions()) {
+      router.replace('/access')
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void fetchUsers(false)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [canUseAdminActions, fetchUsers, router])
+
   const runLockUsers = async () => {
+    if (!canUseAdminActions()) {
+      router.replace('/access')
+      return
+    }
+
     setLoading(true)
     const { error } = await supabase.rpc('lock_all_users')
 
@@ -125,35 +148,6 @@ const runAgregarResultado = async () => {
           flexWrap: 'wrap'
         }}
       >
-        <button
-          onClick={runSumatoria}
-          style={{
-            padding: '10px 15px',
-            background: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            fontWeight: 'bold'
-          }}
-        >
-          Recalcular puntos
-        </button>
-
-        <button
-          onClick={fetchUsers}
-          style={{
-            padding: '10px 15px',
-            background: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer'
-          }}
-        >
-          Refrescar
-        </button>
-
         <button
           onClick={() => {
             localStorage.clear()
@@ -226,13 +220,6 @@ const runAgregarResultado = async () => {
 <div style={{ textAlign: 'center', marginBottom: 25, padding: 30,}}>
       <button
   onClick={() => {
-    const code = prompt('Ingresa el código de confirmación')
-
-    if (code !== 'Ex4Rc4d0#2026+') {
-      alert('Código incorrecto')
-      return
-    }
-
     const ok = confirm('¿Seguro que quieres bloquear todos los usuarios?')
     if (ok) runLockUsers()
   }}
@@ -316,13 +303,6 @@ const runAgregarResultado = async () => {
 
   <button
   onClick={() => {
-    const code = prompt('Ingresa el código de confirmación')
-
-    if (code !== 'Ex4Rc4d0#2026+') {
-      alert('Código incorrecto')
-      return
-    }
-
     const ok = confirm('¿Seguro que quieres guardar este resultado?')
     if (!ok) return
 
@@ -357,16 +337,24 @@ const runAgregarResultado = async () => {
     gap: 20
   }}
 >
-  <img
+  <Image
     src="/faseGrupo.png"
     alt="Fase de grupos"
-    style={{ maxWidth: '100%', borderRadius: 10 }}
+    width={1600}
+    height={900}
+    priority
+    loading="eager"
+    style={{ width: '100%', height: 'auto', borderRadius: 10 }}
   />
 
-  <img
+  <Image
     src="/eliminatorias.png"
     alt="Eliminatorias"
-    style={{ maxWidth: '100%', borderRadius: 10 }}
+    width={1600}
+    height={900}
+    priority
+    loading="eager"
+    style={{ width: '100%', height: 'auto', borderRadius: 10 }}
   />
 </div>
 
